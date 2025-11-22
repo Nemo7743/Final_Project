@@ -1,6 +1,6 @@
 # 🐍 Classic Snake Game (Python Final Project)
 
-這是一個使用 Python 和 **Pygame** 函式庫開發的經典貪吃蛇遊戲。此專案實作了完整的遊戲迴圈，並採用物件導向 (OOP) 的方式設計，將角色行為與遊戲邏輯清晰分離。
+這是一個使用 Python 和 **Pygame** 函式庫開發的經典貪吃蛇遊戲。此專案實作了完整的遊戲迴圈，並採用物件導向的方式設計，將角色行為與遊戲邏輯清晰分離。
 
 ## 📂 程式架構 (Project Structure)
 
