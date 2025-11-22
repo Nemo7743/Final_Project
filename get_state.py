@@ -1,46 +1,49 @@
-def get_state(self, game):
-    head = game.snake[0]
-    #先定義好蛇頭下一步可能的位置（4個方向）
-    point_l = Point(head.x - 20, head.y)
-    point_r = Point(head.x + 20, head.y)
-    point_u = Point(head.x, head.y - 20)
-    point_d = Point(head.x, head.y + 20)
+# snake.py
+import pygame
+from settings import * # 匯入剛剛定義的所有常數
 
-    #判斷目前行進的方向，只會有一個變數的值會是1
-    dir_l = game.direction == Direction.LEFT
-    dir_r = game.direction == Direction.RIGHT
-    dir_u = game.direction == Direction.UP
-    dir_d = game.direction == Direction.DOWN
+class Snake:
+    def __init__(self):
+        # 初始化蛇的位置：從畫面中間開始
+        start_x = WIDTH // 2
+        start_y = HEIGHT // 2
+        self.body = [(start_x, start_y), (start_x, start_y + 1)] 
+        self.direction = UP # 初始往上走
 
-    #建立狀態向量
-    state = [
-        ## 直行會遇到的碰撞
-        (dir_r and game.is_collision(point_r)) or  #蛇朝右方向前進，直走時蛇頭會和(畫布)右邊的相鄰位置碰撞
-        (dir_l and game.is_collision(point_l)) or
-        (dir_u and game.is_collision(point_u)) or
-        (dir_d and game.is_collision(point_d)),
+    def change_direction(self, new_direction):
+        # 處理方向輸入，避免反轉
+        if new_direction == LEFT and self.direction != RIGHT:
+            self.direction = new_direction
+        elif new_direction == RIGHT and self.direction != LEFT:
+            self.direction = new_direction
+        elif new_direction == UP and self.direction != DOWN:
+            self.direction = new_direction
+        elif new_direction == DOWN and self.direction != UP:
+            self.direction = new_direction
 
-        ## 右轉（順時針）會遇到的碰撞
-        (dir_u and game.is_collision(point_r)) or  #蛇朝上方前進，向右轉時蛇頭會和(畫布)右邊的相鄰位置碰撞
-        (dir_d and game.is_collision(point_l)) or
-        (dir_l and game.is_collision(point_u)) or
-        (dir_r and game.is_collision(point_d)),
+    def get_head_position(self):
+        return self.body[0]
 
-        ## 左轉（逆時針）會遇到的碰撞
-        (dir_d and game.is_collision(point_r)) or  #蛇朝下方前進，向左轉時蛇頭會和(畫布)右邊的相鄰位置碰撞
-        (dir_u and game.is_collision(point_l)) or
-        (dir_r and game.is_collision(point_u)) or
-        (dir_l and game.is_collision(point_d)),
-
-        dir_l,
-        dir_r,
-        dir_u,
-        dir_d,
-
-        game.food.x < game.head.x, # 食物在左邊
-        game.food.x > game.head.x,
-        game.food.y < game.head.y, # 食物在上面
-        game.food.y > game.head.y
-        ]
-
-    return np.array(state, dtype=int)
+    def move(self):
+        cur_x, cur_y = self.get_head_position()
+        
+        if self.direction == UP:
+            cur_y -= 1
+        elif self.direction == DOWN:
+            cur_y += 1
+        elif self.direction == LEFT:
+            cur_x -= 1
+        elif self.direction == RIGHT:
+            cur_x += 1
+            
+        new_head = (cur_x, cur_y)
+        self.body.insert(0, new_head)
+    
+    def shrink(self):
+        self.body.pop()
+    
+    def draw(self, surface):
+        for x, y in self.body:
+            rect = pygame.Rect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
+            pygame.draw.rect(surface, GREEN, rect)
+            pygame.draw.rect(surface, BLACK, rect, 1)
