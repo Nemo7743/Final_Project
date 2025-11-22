@@ -1,125 +1,54 @@
-!pip install pygame
+# main.py
 import pygame
-import random
 import sys
-import os
-import numpy as np
-from IPython.display import Image, display, clear_output
-import pygame
-import random
-import os
-import numpy as np
-from IPython.display import Image, display, clear_output
+from settings import * # 匯入設定
+from game import Game  # 匯入遊戲邏輯
 
-pygame.init()
+def main():
+    pygame.init()
+    
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("經典貪食蛇")
+    
+    clock = pygame.time.Clock()
+    game = Game() # 不需要傳參數了，因為 Game 內部直接讀取 settings
+    
+    running = True 
+    
+    while running:
+        # --- 事件處理 ---
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            
+            # 這裡需要用到 settings 裡面的方向常數
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    game.snake.change_direction(LEFT)
+                elif event.key == pygame.K_RIGHT:
+                    game.snake.change_direction(RIGHT)
+                elif event.key == pygame.K_UP:
+                    game.snake.change_direction(UP)
+                elif event.key == pygame.K_DOWN:
+                    game.snake.change_direction(DOWN)
+        
+        # --- 邏輯更新 ---
+        game_over = game.update() 
+        
+        if game_over:
+            print(f"Final Score: {game.score}")
+            pygame.time.delay(2000)
+            running = False 
 
-BLOCK_SIZE = 20
-WIDTH = 20
-HEIGHT = 15
-SCREEN_WIDTH = (WIDTH + 2) * BLOCK_SIZE
-SCREEN_HEIGHT = (HEIGHT + 2) * BLOCK_SIZE
+        # --- 畫面繪製 ---
+        screen.fill(BLACK)
+        game.draw(screen)
+        pygame.display.update()
+        
+        clock.tick(FPS)
 
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GREEN = (0, 255, 0)
-YELLOW = (255, 255, 0)
-RED = (255, 0, 0)
+    pygame.quit()
+    sys.exit()
 
-STOP, LEFT, RIGHT, UP, DOWN = 0, 1, 2, 3, 4
-
-class SnakeGameEnv:
-    def __init__(self):
-        self.surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.font = pygame.font.SysFont(None, 35)
-        self.reset()
-
-    def reset(self):
-        self.x = WIDTH // 2
-        self.y = HEIGHT // 2
-        self.direction = STOP
-        self.score = 0
-        self.tail = []
-        self.n_tail = 0
-        self.game_over = False
-        self.place_coin()
-        return self.get_state()
-
-    def place_coin(self):
-        while True:
-            self.coin_x = random.randint(1, WIDTH - 2)
-            self.coin_y = random.randint(1, HEIGHT - 2)
-            if (self.coin_x, self.coin_y) not in self.tail and (self.coin_x != self.x or self.coin_y != self.y):
-                break
-
-    def get_state(self):
-        # 你可以根據這裡設計自己的狀態表示方式
-        return (self.x, self.y, self.coin_x, self.coin_y)
-
-    def step(self, action):
-        if self.game_over:
-            return self.get_state(), 0, True
-
-        # 不能反向
-        if action == LEFT and self.direction != RIGHT:
-            self.direction = LEFT
-        elif action == RIGHT and self.direction != LEFT:
-            self.direction = RIGHT
-        elif action == UP and self.direction != DOWN:
-            self.direction = UP
-        elif action == DOWN and self.direction != UP:
-            self.direction = DOWN
-
-        # 更新尾巴
-        if self.n_tail > 0:
-            self.tail.insert(0, (self.x, self.y))
-            self.tail = self.tail[:self.n_tail]
-
-        # 移動
-        if self.direction == LEFT:
-            self.x -= 1
-        elif self.direction == RIGHT:
-            self.x += 1
-        elif self.direction == UP:
-            self.y -= 1
-        elif self.direction == DOWN:
-            self.y += 1
-
-        # 檢查撞牆
-        if self.x < 0 or self.x >= WIDTH or self.y < 0 or self.y >= HEIGHT:
-            self.game_over = True
-            return self.get_state(), -100, True
-
-        # 撞自己
-        if (self.x, self.y) in self.tail:
-            self.game_over = True
-            return self.get_state(), -100, True
-
-        # 吃到 coin
-        reward = 0
-        if self.x == self.coin_x and self.y == self.coin_y:
-            self.score += 20
-            self.n_tail += 1
-            self.place_coin()
-            reward = 20
-
-        return self.get_state(), reward, self.game_over
-
-    def render(self):
-        self.surface.fill(BLACK)
-
-        for i in range(WIDTH + 2):
-            pygame.draw.rect(self.surface, WHITE, (i * BLOCK_SIZE, 0, BLOCK_SIZE, BLOCK_SIZE))
-            pygame.draw.rect(self.surface, WHITE, (i * BLOCK_SIZE, (HEIGHT + 1) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
-        for i in range(HEIGHT + 2):
-            pygame.draw.rect(self.surface, WHITE, (0, i * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
-            pygame.draw.rect(self.surface, WHITE, ((WIDTH + 1) * BLOCK_SIZE, i * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
-
-        pygame.draw.rect(self.surface, GREEN, ((self.x + 1) * BLOCK_SIZE, (self.y + 1) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
-        for tx, ty in self.tail:
-            pygame.draw.rect(self.surface, GREEN, ((tx + 1) * BLOCK_SIZE, (ty + 1) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
-
-        pygame.draw.rect(self.surface, YELLOW, ((self.coin_x + 1) * BLOCK_SIZE, (self.coin_y + 1) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
-
-        pygame.image.save(self.surface, "frame.png")
-        clear_output(wait=True)
-        display(Image("frame.png"))
+if __name__ == '__main__':
+    main()
