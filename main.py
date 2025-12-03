@@ -1,17 +1,17 @@
 # main.py
 import pygame
 import sys
-from settings import * # 匯入設定
-from game import Game  # 匯入遊戲邏輯
+from settings import * 
+from game import Game 
 
 def main():
     pygame.init()
     
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("經典貪食蛇")
+    pygame.display.set_caption(f"Python Snake - {GAME_MODE} Mode")
     
     clock = pygame.time.Clock()
-    game = Game() # 不需要傳參數了，因為 Game 內部直接讀取 settings
+    game = Game()
     
     running = True 
     
@@ -21,22 +21,38 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             
-            # 這裡需要用到 settings 裡面的方向常數
             if event.type == pygame.KEYDOWN:
+                # --- Player 1 Controls (Arrow Keys) ---
+                # Always exists at index 0
                 if event.key == pygame.K_LEFT:
-                    game.snake.change_direction(LEFT)
+                    game.snakes[0].change_direction(LEFT)
                 elif event.key == pygame.K_RIGHT:
-                    game.snake.change_direction(RIGHT)
+                    game.snakes[0].change_direction(RIGHT)
                 elif event.key == pygame.K_UP:
-                    game.snake.change_direction(UP)
+                    game.snakes[0].change_direction(UP)
                 elif event.key == pygame.K_DOWN:
-                    game.snake.change_direction(DOWN)
+                    game.snakes[0].change_direction(DOWN)
+                
+                # --- Player 2 Controls (WASD) ---
+                # Only active in DUAL mode, exists at index 1
+                if GAME_MODE == 'DUAL':
+                    if event.key == pygame.K_a:
+                        game.snakes[1].change_direction(LEFT)
+                    elif event.key == pygame.K_d:
+                        game.snakes[1].change_direction(RIGHT)
+                    elif event.key == pygame.K_w:
+                        game.snakes[1].change_direction(UP)
+                    elif event.key == pygame.K_s:
+                        game.snakes[1].change_direction(DOWN)
         
         # --- 邏輯更新 ---
         game_over = game.update() 
         
         if game_over:
-            print(f"Final Score: {game.score}")
+            # 簡單結算顯示
+            final_msg = "Game Over!"
+            print(final_msg)
+            print(f"Scores: {game.scores}")
             pygame.time.delay(2000)
             running = False 
 
