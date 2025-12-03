@@ -26,6 +26,7 @@
 
 ### 4. `Settings` (參數設定)
 * **基礎參數**：視窗長寬、遊戲幀數、顏色定義及方向定義。
+* **遊玩模式**：'CLASSIC' (1 Player), 'DUAL' (2 Players)
 
 ## 🚀 如何執行 (How to Run)
 
