@@ -42,5 +42,3 @@
 2.執行 menu.py 進入遊戲：
   ```bash
   python menu.py
-
-python menu.py
