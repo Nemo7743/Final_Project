@@ -39,6 +39,6 @@
 1. 請確保已安裝 Python 與 Pygame 套件：
    ```bash
    pip install pygame
-2.執行 menu.py 進入遊戲：
+2. 執行 menu.py 進入遊戲：
   ```bash
   python menu.py
