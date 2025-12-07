@@ -1,29 +1,39 @@
-# main.py
 import pygame
 import sys
-from settings import * 
+from settings import *
 from game import Game 
 
-def main():
-    pygame.init()
-    
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption(f"Python Snake - {GAME_MODE} Mode")
+def run_game(game_mode):
+    """
+    Runs the game loop.
+    :param game_mode: 'CLASSIC' or 'DUAL'
+    :return: Dictionary containing scores and winner info.
+    """
+    # Check if screen is already initialized (for Menu integration)
+    screen = pygame.display.get_surface()
+    if screen is None:
+        pygame.init()
+        screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        pygame.display.set_caption(f"Python Snake - {game_mode} Mode")
     
     clock = pygame.time.Clock()
-    game = Game()
+    
+    # Pass game_mode to the Game class
+    game = Game(game_mode)
     
     running = True 
-    
+    game_result = None
+
     while running:
         # --- 事件處理 ---
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                # If window is closed, we return None or a specific flag
+                # to let the main menu handle the shutdown
+                return None 
             
             if event.type == pygame.KEYDOWN:
                 # --- Player 1 Controls (Arrow Keys) ---
-                # Always exists at index 0
                 if event.key == pygame.K_LEFT:
                     game.snakes[0].change_direction(LEFT)
                 elif event.key == pygame.K_RIGHT:
@@ -34,8 +44,8 @@ def main():
                     game.snakes[0].change_direction(DOWN)
                 
                 # --- Player 2 Controls (WASD) ---
-                # Only active in DUAL mode, exists at index 1
-                if GAME_MODE == 'DUAL':
+                # Use local game_mode argument
+                if game_mode == 'DUAL':
                     if event.key == pygame.K_a:
                         game.snakes[1].change_direction(LEFT)
                     elif event.key == pygame.K_d:
@@ -46,14 +56,19 @@ def main():
                         game.snakes[1].change_direction(DOWN)
         
         # --- 邏輯更新 ---
-        game_over = game.update() 
+        # update() returns None if game continues, or a dict if game over
+        result = game.update() 
         
-        if game_over:
+        if result is not None:
+            game_result = result
+            
             # 簡單結算顯示
             final_msg = "Game Over!"
             print(final_msg)
-            print(f"Scores: {game.scores}")
-            pygame.time.delay(2000)
+            print(f"Result: {game_result}")
+            
+            # Small delay to see the crash
+            pygame.time.delay(1000)
             running = False 
 
         # --- 畫面繪製 ---
@@ -63,8 +78,20 @@ def main():
         
         clock.tick(FPS)
 
-    pygame.quit()
-    sys.exit()
+    # Return the stats to the caller (Menu)
+    return game_result
 
 if __name__ == '__main__':
-    main()
+    # Standalone testing block
+    pygame.init()
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("Snake Test")
+    
+    # Force a mode for testing
+    mode = GAME_MODE # From settings.py
+    
+    result = run_game(mode)
+    print(f"Final Return Data: {result}")
+    
+    pygame.quit()
+    sys.exit()
